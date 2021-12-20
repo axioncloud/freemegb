@@ -8,11 +8,8 @@ github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4 h1:qZNfIGkIANxGv/Oq
 github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4/go.mod h1:kW3HQ4UdaAyrUCSSDR4xUzBKW6O2iA4uHhk7AtyYp10=
 github.com/godbus/dbus v5.0.1+incompatible h1:fsDsnr/6MFSIm3kl6JJpq5pH+vO/rA5jUunalLnzSc8=
 github.com/godbus/dbus v5.0.1+incompatible/go.mod h1:/YcGZj5zSblfDWMMoOzV4fas9FZnQYTkDnsGvmh2Grw=
-github.com/gotk3/gotk3 v0.0.0-20200103101635-d3629b451bb5/go.mod h1:Eew3QBwAOBTrfFFDmsDE5wZWbcagBL1NUslj1GhRveo=
 github.com/gotk3/gotk3 v0.4.0 h1:TIuhyQitGeRTxOQIV3AJlYtEWWJpC74JHwAIsxlH8MU=
 github.com/gotk3/gotk3 v0.4.0/go.mod h1:Eew3QBwAOBTrfFFDmsDE5wZWbcagBL1NUslj1GhRveo=
-github.com/ioncloud64/freemegb v0.0.9 h1:TsPpKrn6eNvuhg5ELOraihLU3lqFM+vWymHsKaqueqg=
-github.com/ioncloud64/freemegb v0.0.9/go.mod h1:pmMBe///qp/a71wSgILhknHn2tKUi4vPBzdN5b8fInA=
 github.com/mattn/go-colorable v0.1.4 h1:snbPLB8fVfU9iwbbo30TPtbLRzwWu6aJS6Xh4eaaviA=
 github.com/mattn/go-colorable v0.1.4/go.mod h1:U0ppj6V5qS13XJ6of8GYAs25YV2eR4EVcfRqFIhoBtE=
 github.com/mattn/go-isatty v0.0.8/go.mod h1:Iq45c/XA43vh69/j3iqttzPXn0bhXyGjM0Hdxcsrc5s=

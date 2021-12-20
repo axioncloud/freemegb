@@ -9,6 +9,5 @@ require (
 	github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4
 	github.com/godbus/dbus v5.0.1+incompatible
 	github.com/gotk3/gotk3 v0.4.0
-	github.com/ioncloud64/freemegb v0.0.9
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 )
