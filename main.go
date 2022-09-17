@@ -18,7 +18,7 @@ import (
 )
 
 // AppID is the GTK Application ID string
-const AppID = "com.ioncloud64.freemegb"
+const AppID = "com.axioncloud.freemegb"
 
 // UITextView is a wrapper containing a GTK TextView
 type UITextView struct {
@@ -26,14 +26,15 @@ type UITextView struct {
 }
 
 func (TV *UITextView) Write(data []byte) (n int, err error) {
-	glib.IdleAdd(func(textAdded string) {
+	var text = string(data)
+	glib.IdleAdd(func() {
 		buff, err := TV.TextView.GetBuffer()
 		if err != nil {
 			core.Logger.Panic(err)
 		}
-		buff.InsertMarkup(buff.GetEndIter(), textAdded)
-		TV.TextView.ScrollToMark(buff.GetInsert(), 0.0, false, 0.0, 0.0)
-	}, string(data))
+		buff.InsertMarkup(buff.GetEndIter(), text)
+		TV.TextView.ScrollToMark(buff.GetInsert(), 0.0, false, 0.0, 1.0)
+	})
 	return len(data), nil
 }
 
@@ -68,6 +69,7 @@ func UI(System *core.SystemType) {
 
 		cssProvider, err := gtk.CssProviderNew()
 		cssProvider.LoadFromPath("ui/style.css")
+		UIErrorCheck(err)
 
 		// Open MenuItem
 		menuOpen, err := builder.GetObject("menuOpen")
@@ -101,11 +103,23 @@ func UI(System *core.SystemType) {
 
 			glarea.SetRequiredVersion(4, 6)
 
-			go System.CPU.Run(true)
+			registerTree, err := builder.GetObject("registerTreeStore")
+			UIErrorCheck(err)
 
-			glarea.Connect("realize", System.GPU.Init, glarea)
-			glarea.Connect("render", System.GPU.Run, glarea)
-			glarea.Connect("unrealize", System.GPU.Destroy, glarea)
+			registerTreeStore, err := IsTreeView(registerTree)
+			UIErrorCheck(err)
+
+			registerList, err := builder.GetObject("registerListStore")
+			UIErrorCheck(err)
+
+			registerListStore, err := IsListStore(registerList)
+			UIErrorCheck(err)
+
+			go System.CPU.Run(true, registerTreeStore, registerListStore)
+
+			glarea.Connect("realize", System.GPU.Init)
+			glarea.Connect("render", System.GPU.Run)
+			glarea.Connect("unrealize", System.GPU.Destroy)
 
 			emulatorWindow.Show()
 		})
@@ -116,6 +130,17 @@ func UI(System *core.SystemType) {
 
 		menuDebug, err := IsMenuItem(menuDebugObj)
 		UIErrorCheck(err)
+
+		// Run MenuItem
+		menuDebugStepObj, err := builder.GetObject("menuDebugStep")
+		UIErrorCheck(err)
+
+		menuDebugStep, err := IsMenuItem(menuDebugStepObj)
+		UIErrorCheck(err)
+
+		menuDebugStep.Connect("activate", func() {
+			System.CPU.STEP = true
+		})
 
 		// Console
 		consoleObj, err := builder.GetObject("textViewConsole")
@@ -139,7 +164,19 @@ func UI(System *core.SystemType) {
 		UIErrorCheck(err)
 
 		menuRun.Connect("activate", func() {
-			go System.CPU.Run(false)
+			registerTree, err := builder.GetObject("registerTreeStore")
+			UIErrorCheck(err)
+
+			registerTreeStore, err := IsTreeView(registerTree)
+			UIErrorCheck(err)
+
+			registerList, err := builder.GetObject("registerListStore")
+			UIErrorCheck(err)
+
+			registerListStore, err := IsListStore(registerList)
+			UIErrorCheck(err)
+
+			go System.CPU.Run(false, registerTreeStore, registerListStore)
 		})
 
 		menuAbout, err := builder.GetObject("menuItemAbout")
@@ -281,6 +318,14 @@ func UI(System *core.SystemType) {
 
 		win, err := IsWindow(obj)
 		UIErrorCheck(err)
+
+		consoleStyleContext, err := console.GetStyleContext()
+		UIErrorCheck(err)
+		consoleStyleContext.AddProvider(cssProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_USER))
+
+		progressbarStyleContext, err := romProgressBar.GetStyleContext()
+		UIErrorCheck(err)
+		progressbarStyleContext.AddProvider(cssProvider, uint(gtk.STYLE_PROVIDER_PRIORITY_USER))
 
 		win.Show()
 		app.AddWindow(win)

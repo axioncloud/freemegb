@@ -1,5 +1,19 @@
 .consoleView
 {
-    font-family: "Courier";
-    font-size: 56pt;
+    font-family: "Calibri";
+    font-size: 10pt;
+}
+
+.consoleView text {
+    background-color: black;
+    color: aliceblue;
+}
+
+progressbar > trough {
+    min-height: 20px;
+}
+
+progressbar > trough > progress {
+    background-color: green;
+    min-height: 20px;
 }

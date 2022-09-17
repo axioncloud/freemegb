@@ -10,15 +10,16 @@ import (
 )
 
 // SystemType is the object definition type
-//  System Structure
-//  ================
-//  CPU Structure
-//   ---> Instructions Array
-//   ---> Registers Structure
-//   ---> MMU Structure
-//  GPU Structure
-//   ---> Graphics Processing
-//   ---> Screen Pipeline
+//
+//	System Structure
+//	================
+//	CPU Structure
+//	 ---> Instructions Array
+//	 ---> Registers Structure
+//	 ---> MMU Structure
+//	GPU Structure
+//	 ---> Graphics Processing
+//	 ---> Screen Pipeline
 type SystemType struct {
 	CPU *CPUType
 	GPU *GPUType
@@ -86,5 +87,7 @@ func (system *SystemType) LoadROM(location string, romListStore *gtk.ListStore,
 	Logger.Logf(LogTypes.COMPLETED, "ROM: %s Loaded in %.2fs", ROM.romName, after.Sub(before).Seconds())
 	menuDebug.SetSensitive(true)
 	menuRun.SetSensitive(true)
+	system.CPU.Reset()
+	Logger.Logf(LogTypes.INFO, "CPU Initialized")
 	return
 }

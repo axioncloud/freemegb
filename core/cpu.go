@@ -3,6 +3,8 @@ package core
 import (
 	"fmt"
 	"time"
+
+	"github.com/gotk3/gotk3/gtk"
 	// "log"
 	// "github.com/gotk3/gotk3/glib"
 )
@@ -24,16 +26,18 @@ var INTERRUPTS INTERRUPTSType = INTERRUPTSType{
 }
 
 // CPUType is the structure to define what's inside a CPU
-//  CPU Structure
-//  ================
-//  ---> Instructions Array
-//  ---> Registers Structure
-//  ---> DEBUG boolean value set with CPU.Run()
-//  ================
+//
+//	CPU Structure
+//	================
+//	---> Instructions Array
+//	---> Registers Structure
+//	---> DEBUG boolean value set with CPU.Run()
+//	================
 type CPUType struct {
 	INSTRUCTIONS []InstructionType
 	REGISTERS    *RegistersType
 	DEBUG        bool
+	STEP         bool
 }
 
 // CPU is the exported object used in the system
@@ -42,10 +46,11 @@ var CPU = CPUType{
 	INSTRUCTIONS: INSTRUCTIONS,
 	REGISTERS:    &REGISTERS,
 	DEBUG:        false,
+	STEP:         false,
 }
 
 // Run is the thread loop function for the CPU
-func (cpu *CPUType) Run(debug bool) {
+func (cpu *CPUType) Run(debug bool, registerTreeView *gtk.TreeView, registerListStore *gtk.ListStore) {
 	// TODO: Proper CPU control flow with stepping
 
 	// TODO: Proper Breakpoint insertion using an array of addresses
@@ -61,12 +66,18 @@ func (cpu *CPUType) Run(debug bool) {
 		}
 		Logger.Logf(LogTypes.INFO, "Instruction: %s\n", cpu.INSTRUCTIONS[ROM.data[cpu.REGISTERS.PC]].Name)
 		if cpu.DEBUG {
+			for !cpu.STEP {
+				time.Sleep(150 * time.Millisecond)
+			}
+
 			cpu.REGISTERS.Print()
 			time.Sleep(1 * time.Second)
+			cpu.STEP = false
 		} else {
 			time.Sleep(4 * time.Microsecond)
 		}
 		cpu.INSTRUCTIONS[ROM.data[cpu.REGISTERS.PC]].Exec()
+		cpu.REGISTERS.UpdateRegisterTable(registerTreeView, registerListStore)
 		cpu.REGISTERS.PC++
 
 	}
@@ -75,5 +86,11 @@ func (cpu *CPUType) Run(debug bool) {
 
 // Reset will reset the CPU, INTERRUPTS and REGISTERS to their default values
 func (cpu *CPUType) Reset() {
-
+	cpu.REGISTERS.AF = 0x01B0
+	cpu.REGISTERS.BC = 0x0013
+	cpu.REGISTERS.DE = 0x00D8
+	cpu.REGISTERS.HL = 0x01B0
+	cpu.REGISTERS.SP = 0xFFFE
+	cpu.REGISTERS.PC = 0x0100
+	cpu.REGISTERS.FLAG_CLEAR(cpu.REGISTERS.FLAGS.ZERO)
 }

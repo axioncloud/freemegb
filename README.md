@@ -10,7 +10,7 @@
 A GameBoy simulator written in Go. GUI bindings are written for GTK+. This program is designed to simulate the real hardware that was equipped in the system itself.
 
 ## Features
-*Note: Features yet implemented are italicized*
+*Note: Features not yet implemented are italicized*
 * Debugging Utility
   - CPU Registers
   - OPCODE descriptions
@@ -28,15 +28,25 @@ A GameBoy simulator written in Go. GUI bindings are written for GTK+. This progr
     + *Throttle speed per hardware specifications*
   - *GPU*
 * *Controller Support*
-* Shader effects (Not yet planned)
+* *Shaders*
+* Installers
+  - Supported Platforms:
+    + Linux RPM, DEB, and AppImage
+    + Windows MSI
+    + OSX dmg
 
 ## Build Requirements
 * Windows
   - Install MSYS2 mingw64
-  - Modify bash profile to include GoPath, Project Directory, and mingw64 bin folder
-  - [Install dependencies](https://github.com/gotk3/gotk3/wiki)
+  - [Install Windows dependencies](https://github.com/gotk3/gotk3/wiki)
+  - Build by hand:
+    - Add */mingw64/bin* to $PATH
+  - Clone repository
+  - Navigate to repository and run *go mod init*
+  - run *make host* or *make windows_amd64*
+    - *Note: if you wish to compile x86, add /bin/mingw32 to your $PATH instead*
 * Linux
-  - [Install dependencies](https://github.com/gotk3/gotk3/wiki)
+  - [Install Linux dependencies](https://github.com/gotk3/gotk3/wiki)
 * Mac OS X
   - Not planned
 

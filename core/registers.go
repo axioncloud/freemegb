@@ -2,6 +2,9 @@ package core
 
 import (
 	"fmt"
+	"reflect"
+
+	"github.com/gotk3/gotk3/gtk"
 )
 
 // FlagsType holds the FLAG values required by documentation
@@ -348,6 +351,48 @@ func (r *RegistersType) FLAG_ISSET(flag byte) bool {
 // FLAG_CLEAR is a helper function to clear flags
 func (r *RegistersType) FLAG_CLEAR(flag byte) {
 	r.SetF(r.F() & ^flag)
+}
+
+func (r *RegistersType) UpdateRegisterTable(registerTreeView *gtk.TreeView, registerListStore *gtk.ListStore) {
+	model := []interface{}{}
+
+	registerValues := reflect.ValueOf(*r)
+	registers := registerValues.Type()
+
+	for i := 0; i < registerValues.NumField(); i++ {
+		row := []string{}
+
+		value, err := registerValues.Field(i).Interface().(uint16)
+		if !err {
+		} // do nothing
+
+		row = append(row, registers.Field(i).Name+":")
+		if registers.Field(i).Name == "FLAGS" {
+			flagsValues := reflect.ValueOf((*r).FLAGS)
+			flags := flagsValues.Type()
+			for j := 0; j < flagsValues.NumField(); j++ {
+				row = append(row, flags.Field(j).Name)
+			}
+		} else {
+			row = append(row, r.Register16toString(value))
+		}
+		model = append(model, row)
+	}
+
+	registerListStore.Clear()
+	registerLength := len(model)
+	for i := 0; i < registerLength; i++ {
+		iter := registerListStore.Append()
+		row := model[i].([]string)
+		err := registerListStore.Set(iter,
+			[]int{0, 1},
+			[]interface{}{row[0], row[1]})
+		if err != nil {
+			Logger.Log(LogTypes.ERROR, err)
+		}
+	}
+
+	registerTreeView.SetModel(registerListStore)
 }
 
 // REGISTERS is the exported object used in the CPU

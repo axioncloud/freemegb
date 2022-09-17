@@ -1,5 +1,5 @@
 # TODO: Create Makefile to automate deployment
-windres		:= x86_64-w64-mingw32-windres
+#windres		:= x86_64-w64-mingw32-windres
 arch		:= $(shell go env GOARCH)
 os			:= $(shell go env GOOS)
 version		:= $(shell cat VERSION)
@@ -9,16 +9,26 @@ version		:= $(shell cat VERSION)
 all: clean host #cross-tools linux_i386 linux_amd64 linux_arm windows_i386 windows_amd64
 
 windows_amd64:
-	$(windres) --input=freemegb_windows.rc --output=freemegb_windows.syso
+	@echo "PATH: ${PATH}"
+	@export PATH='/mingw64/bin:${PATH}'
+	@echo "GCC: $(shell which gcc)"
+	@echo "G++: $(shell which g++)"
+	@echo "PKG-CONFIG: $(shell which pkg-config)"
+	windres --input=freemegb_windows.rc --output=freemegb_windows.syso
 # ifeq ($(arch),arm\)
-	PKG_CONFIG_PATH=/usr/x86_64-w64-mingw32/lib/pkgconfig PKG_CONFIG=x86_64-w64-mingw32-pkg-config CXX=x86_64-w64-mingw32-g++ CC=x86_64-w64-mingw32-gcc GOOS=windows GOARCH=amd64 CGO_ENABLED=1 go build -v -o bin/windows_amd64/freemegb.exe -ldflags "-H windowsgui"
+	PKG_CONFIG_PATH=/mingw64/lib/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig:/lib/pkgconfig GOOS=windows GOARCH=amd64 CGO_ENABLED=1 go build -v -o bin/windows_amd64/freemegb.exe
 # endif
 	cp -rf ui bin
 windows_i386:
+	@echo "PATH: ${PATH}"
+	PATH='/mingw32/bin:${PATH}'
+	@echo "GCC: $(shell which gcc)"
+	@echo "G++: $(shell which g++)"
+	@echo "PKG-CONFIG: $(shell which pkg-config)"
 	windres --input=freemegb_windows.rc --output=freemegb_windows.syso
-ifeq ($(arch),arm)
-	PKG_CONFIG=i686-linux-gnu-pkg-config CXX=i686-w64-mingw32-g++ CC=i686-w64-mingw32-gcc GOOS=windows GOARCH=386 CGO_ENABLED=1 go build -v -o bin/windows_386/freemegb.exe -ldflags "-H windowsgui"
-endif
+#ifeq ($(arch),arm)
+	GOOS=windows GOARCH=386 CGO_ENABLED=1 go build -v -o bin/windows_386/freemegb.exe -ldflags "-H windowsgui"
+#endif
 	cp -rf ui bin
 linux_arm:
 	GOOS=linux GOARCH=arm PKG_CONFIG_PATH=/usr/arm-linux-gnueabi/lib/pkgconfig CGO_ENABLED=1 CC=arm-linux-gnueabi-gcc-8 go build -v -o bin/linux_arm/freemegb 

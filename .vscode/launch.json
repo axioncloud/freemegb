@@ -12,6 +12,15 @@
             "program": "${workspaceFolder}",
             "env": {},
             "args": []
+        },
+        {
+            "name": "Build & Launch",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "make windows_amd64; ${workspaceFolder}/bin/windows_amd64/freemegb.exe",
+            "env": {},
+            "args": []
         }
     ]
 }
