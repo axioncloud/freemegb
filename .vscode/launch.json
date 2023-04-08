@@ -9,16 +9,25 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}",
+            "program": "${workspaceFolder}/main.go",
             "env": {},
             "args": []
         },
         {
-            "name": "Build & Launch",
+            "name": "Build & Launch [WINx64]",
             "type": "go",
             "request": "launch",
             "mode": "auto",
             "program": "make windows_amd64; ${workspaceFolder}/bin/windows_amd64/freemegb.exe",
+            "env": {},
+            "args": []
+        },
+        {
+            "name": "Build & Launch [LINx64]",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "make linux_amd64; ${workspaceFolder}/bin/linux_amd64/freemegb.exe",
             "env": {},
             "args": []
         }

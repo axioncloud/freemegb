@@ -89,5 +89,4 @@ func (system *SystemType) LoadROM(location string, romListStore *gtk.ListStore,
 	menuRun.SetSensitive(true)
 	system.CPU.Reset()
 	Logger.Logf(LogTypes.INFO, "CPU Initialized")
-	return
 }

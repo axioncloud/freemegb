@@ -338,6 +338,41 @@ func (r *RegistersType) INC(value byte) byte {
 	return value
 }
 
+// dec is a helper function to decrement the value
+func (r *RegistersType) DEC(value byte) byte {
+	if (value & 0x0F) != 0 {
+		r.FLAG_CLEAR(r.FLAGS.HALF_CARRY)
+	} else {
+		r.FLAG_SET(r.FLAGS.HALF_CARRY)
+	}
+
+	value--
+
+	if value&1 != 0 {
+		r.FLAG_CLEAR(r.FLAGS.ZERO)
+	} else {
+		r.FLAG_SET(r.FLAGS.ZERO)
+	}
+
+	r.FLAG_SET(r.FLAGS.SUBTRACT)
+
+	return value
+}
+
+// dec is a helper function to decrement the value
+func (r *RegistersType) ReadOperand(ins *InstructionType, rom *ROMType) {
+	switch ins.NumOperands {
+	case 0:
+		break
+	case 1:
+		ins.Operand = MMU.ReadByte(CPU.REGISTERS.PC)
+	case 2:
+		ins.Operand = MMU.ReadShort(CPU.REGISTERS.PC)
+	default:
+		break
+	}
+}
+
 // FLAG_SET is a helper function to set flags
 func (r *RegistersType) FLAG_SET(flag byte) {
 	r.SetF(r.F() | flag)

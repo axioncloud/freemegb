@@ -13,4 +13,4 @@ require (
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 )
 
-replace github.com/ioncloud64/freemegb => C:\Users\Kamalen\Documents\Code\freemegb
+replace github.com/ioncloud64/freemegb => ./

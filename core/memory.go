@@ -96,7 +96,7 @@ func (mmu *MMUType) WriteByte(address uint16, value byte) {
 }
 
 func (mmu *MMUType) ReadShort(address uint16) uint16 {
-	return uint16(mmu.ReadByte(address) | mmu.ReadByte((address+1)<<8))
+	return uint16(uint16(mmu.ReadByte(address)) | uint16(mmu.ReadByte((address+1)))<<8)
 }
 
 func (mmu *MMUType) WriteShort(address uint16, value uint16) {

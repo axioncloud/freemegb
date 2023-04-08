@@ -19,11 +19,7 @@ type INTERRUPTSType struct {
 // INTERRUPTS is the exported object used in the system
 //
 // INTERRUPTS is exported for value setting in other files
-var INTERRUPTS INTERRUPTSType = INTERRUPTSType{
-	master: 0x00,
-	enable: 0x00,
-	flags:  0x00,
-}
+var INTERRUPTS INTERRUPTSType
 
 // CPUType is the structure to define what's inside a CPU
 //
@@ -38,24 +34,55 @@ type CPUType struct {
 	REGISTERS    *RegistersType
 	DEBUG        bool
 	STEP         bool
+	KEEP_STEP    bool
+	RUNNING      bool
+	PAUSED       bool
+	BREAKPOINTS  map[uint16]bool
 }
 
 // CPU is the exported object used in the system
 // CPU is exported to become a shared variable in the System object
-var CPU = CPUType{
-	INSTRUCTIONS: INSTRUCTIONS,
-	REGISTERS:    &REGISTERS,
-	DEBUG:        false,
-	STEP:         false,
+var CPU CPUType
+
+func init() {
+	CPU = CPUType{
+		INSTRUCTIONS: INSTRUCTIONS,
+		REGISTERS:    &REGISTERS,
+		DEBUG:        false,
+		STEP:         false,
+		RUNNING:      false,
+		PAUSED:       false,
+		BREAKPOINTS:  make(map[uint16]bool),
+	}
+	INTERRUPTS = INTERRUPTSType{
+		master: 0x00,
+		enable: 0x00,
+		flags:  0x00,
+	}
 }
 
 // Run is the thread loop function for the CPU
 func (cpu *CPUType) Run(debug bool, registerTreeView *gtk.TreeView, registerListStore *gtk.ListStore) {
 	// TODO: Proper CPU control flow with stepping
+	cpu.BREAKPOINTS[0x101] = true
 
 	// TODO: Proper Breakpoint insertion using an array of addresses
 	cpu.DEBUG = debug
+	cpu.RUNNING = true
 	for {
+		if !cpu.RUNNING {
+			break
+		}
+		bp_enabled, bp_exists := cpu.BREAKPOINTS[cpu.REGISTERS.PC]
+		if bp_exists && bp_enabled {
+			cpu.DEBUG = true
+			cpu.STEP = true
+			cpu.KEEP_STEP = true
+		}
+		if cpu.KEEP_STEP {
+			cpu.STEP = true
+		}
+
 		if cpu.INSTRUCTIONS[ROM.data[cpu.REGISTERS.PC]].Name == "UNKNOWN" {
 			var PCString = cpu.REGISTERS.Register16toString(cpu.REGISTERS.PC)
 			Logger.Logf(LogTypes.ERROR, "UNKNOWN INSTRUCTION:\n\t\t\t\tINSTRUCTION: 0x%02X\n\t\t\t\tAt ROM Offset: %s\n",
@@ -65,20 +92,30 @@ func (cpu *CPUType) Run(debug bool, registerTreeView *gtk.TreeView, registerList
 			break
 		}
 		Logger.Logf(LogTypes.INFO, "Instruction: %s\n", cpu.INSTRUCTIONS[ROM.data[cpu.REGISTERS.PC]].Name)
+
+		for cpu.PAUSED {
+			time.Sleep(400 * time.Millisecond)
+		}
+
 		if cpu.DEBUG {
-			for !cpu.STEP {
+			for cpu.STEP && cpu.RUNNING {
 				time.Sleep(150 * time.Millisecond)
 			}
 
 			cpu.REGISTERS.Print()
-			time.Sleep(1 * time.Second)
-			cpu.STEP = false
+			time.Sleep(500 * time.Millisecond)
 		} else {
-			time.Sleep(4 * time.Microsecond)
+			time.Sleep(80 * time.Millisecond)
 		}
-		cpu.INSTRUCTIONS[ROM.data[cpu.REGISTERS.PC]].Exec()
-		cpu.REGISTERS.UpdateRegisterTable(registerTreeView, registerListStore)
+		var instruction = cpu.INSTRUCTIONS[ROM.data[cpu.REGISTERS.PC]]
 		cpu.REGISTERS.PC++
+		if instruction.NumOperands != 0 {
+			cpu.REGISTERS.ReadOperand(&instruction, &ROM)
+		}
+		cpu.REGISTERS.PC += uint16(instruction.NumOperands)
+		instruction.Exec(instruction.Operand)
+		instruction.Operand = nil
+		cpu.REGISTERS.UpdateRegisterTable(registerTreeView, registerListStore)
 
 	}
 	//	finished <- true
@@ -92,5 +129,9 @@ func (cpu *CPUType) Reset() {
 	cpu.REGISTERS.HL = 0x01B0
 	cpu.REGISTERS.SP = 0xFFFE
 	cpu.REGISTERS.PC = 0x0100
+	cpu.RUNNING = false
 	cpu.REGISTERS.FLAG_CLEAR(cpu.REGISTERS.FLAGS.ZERO)
+	for breakpoint := range cpu.BREAKPOINTS {
+		delete(cpu.BREAKPOINTS, breakpoint)
+	}
 }

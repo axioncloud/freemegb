@@ -115,6 +115,8 @@ func UI(System *core.SystemType) {
 			registerListStore, err := IsListStore(registerList)
 			UIErrorCheck(err)
 
+			debugStart.SetSensitive(false)
+
 			go System.CPU.Run(true, registerTreeStore, registerListStore)
 
 			glarea.Connect("realize", System.GPU.Init)
@@ -139,7 +141,81 @@ func UI(System *core.SystemType) {
 		UIErrorCheck(err)
 
 		menuDebugStep.Connect("activate", func() {
-			System.CPU.STEP = true
+			System.CPU.STEP = false
+			System.CPU.KEEP_STEP = true
+		})
+
+		// Debug Pause/Resume
+		//TODO - FINISH UP
+		menuDebugPauseResumeObj, err := builder.GetObject("menuDebugPauseResume")
+		UIErrorCheck(err)
+
+		menuPause, err := IsMenuItem(menuDebugPauseResumeObj)
+		UIErrorCheck(err)
+
+		menuPause.Connect("activate", func() {
+			if System.CPU.PAUSED {
+				System.CPU.PAUSED = false
+			} else {
+				System.CPU.PAUSED = true
+			}
+			if System.CPU.KEEP_STEP {
+				System.CPU.STEP = false
+				System.CPU.KEEP_STEP = false
+				System.CPU.PAUSED = false
+			}
+		})
+
+		// Pause/Resume
+		//TODO - FINISH UP
+		menuResumeObj, err := builder.GetObject("menuPauseResume")
+		UIErrorCheck(err)
+
+		menuResume, err := IsMenuItem(menuResumeObj)
+		UIErrorCheck(err)
+
+		menuResume.Connect("activate", func() {
+			if System.CPU.PAUSED {
+				System.CPU.PAUSED = false
+			} else {
+				System.CPU.PAUSED = true
+			}
+		})
+		// Debug Stop
+		//TODO - FINISH UP
+		menuDebugStopObj, err := builder.GetObject("menuDebugStop")
+		UIErrorCheck(err)
+
+		menuDebugStop, err := IsMenuItem(menuDebugStopObj)
+		UIErrorCheck(err)
+
+		menuDebugStop.Connect("activate", func() {
+			System.CPU.RUNNING = false
+		})
+
+		// Stop
+		//TODO - FINISH UP
+		menuStopObj, err := builder.GetObject("menuStop")
+		UIErrorCheck(err)
+
+		menuStop, err := IsMenuItem(menuStopObj)
+		UIErrorCheck(err)
+
+		menuStop.Connect("activate", func() {
+			System.CPU.RUNNING = false
+		})
+
+		// Reset
+		//TODO - FINISH UP
+		menuResetObj, err := builder.GetObject("menuReset")
+		UIErrorCheck(err)
+
+		menuReset, err := IsMenuItem(menuResetObj)
+		UIErrorCheck(err)
+
+		menuReset.Connect("activate", func() {
+			System.CPU.RUNNING = false
+			System.CPU.Reset()
 		})
 
 		// Console
@@ -164,6 +240,23 @@ func UI(System *core.SystemType) {
 		UIErrorCheck(err)
 
 		menuRun.Connect("activate", func() {
+			b, err := gtk.BuilderNewFromFile("ui/EmulatorWindow.glade")
+			UIErrorCheck(err)
+
+			obj, err := b.GetObject("EmulatorWindow")
+			UIErrorCheck(err)
+
+			emulatorWindow, err := IsWindow(obj)
+			UIErrorCheck(err)
+
+			gtkglarea, err := b.GetObject("GLArea")
+			UIErrorCheck(err)
+
+			glarea, err := IsGLArea(gtkglarea)
+			UIErrorCheck(err)
+
+			glarea.SetRequiredVersion(4, 6)
+
 			registerTree, err := builder.GetObject("registerTreeStore")
 			UIErrorCheck(err)
 
@@ -177,6 +270,12 @@ func UI(System *core.SystemType) {
 			UIErrorCheck(err)
 
 			go System.CPU.Run(false, registerTreeStore, registerListStore)
+
+			glarea.Connect("realize", System.GPU.Init)
+			glarea.Connect("render", System.GPU.Run)
+			glarea.Connect("unrealize", System.GPU.Destroy)
+
+			emulatorWindow.Show()
 		})
 
 		menuAbout, err := builder.GetObject("menuItemAbout")
